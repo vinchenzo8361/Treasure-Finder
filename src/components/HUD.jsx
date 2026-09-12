@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react'
 import { getEquipment, formatTime } from '../game/engine.js'
 import { COLLECTIBLE_COUNT } from '../data/collectibles.js'
+import { drawRunMap } from '../game/renderer.js'
 
 export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, onEndRun, onAddMoney }) {
   const { progress, map, player, timerMs, digging } = state
@@ -7,6 +9,7 @@ export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, 
 
   return (
     <div className="hud">
+      {map?.bigMap && <BigMapMinimap state={state} />}
       <div className="hud-left">
         <div className="hud-chip" title="Money">
           <span className="hud-ico">🪙</span>
@@ -101,6 +104,33 @@ export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, 
       >
         {state.adminMode ? 'Admin ON' : 'Admin Mode'}
       </button>
+    </div>
+  )
+}
+
+function BigMapMinimap({ state }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !state.map) return
+
+    const ctx = canvas.getContext('2d')
+    const run = {
+      ...state.map,
+      holes: state.map.holes || {},
+      collectibleCells: state.map.collectibleCells || {},
+      placedCollectibles: state.map.placedCollectibles || [],
+      tiles: Array.from(state.map.tiles),
+    }
+
+    drawRunMap(ctx, run, canvas.width, canvas.height)
+  }, [state.map])
+
+  return (
+    <div className="big-map-minimap">
+      <div className="big-map-minimap-label">Big Map</div>
+      <canvas ref={canvasRef} width={120} height={120} />
     </div>
   )
 }

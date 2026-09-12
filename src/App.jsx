@@ -6,6 +6,7 @@ import {
   buyEquipment,
   buySandCapacity,
   buyHint,
+  buyBigMapDigger,
   fullReset,
   endRun,
 } from './game/engine.js'
@@ -214,6 +215,7 @@ export default function App() {
           onBuyEquipment={() => setState((s) => buyEquipment(s))}
           onBuyCapacity={() => setState((s) => buySandCapacity(s))}
           onBuyHint={() => setState((s) => buyHint(s))}
+          onBuyBigMapDigger={() => setState((s) => buyBigMapDigger(s))}
           onClose={() => setState((s) => ({ ...s, shopOpen: false }))}
         />
       )}

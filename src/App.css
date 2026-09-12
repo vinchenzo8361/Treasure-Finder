@@ -244,6 +244,38 @@ button {
   font-size: 0.85rem;
 }
 
+.big-map-minimap {
+  position: absolute;
+  top: 4.8rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.45rem 0.25rem;
+  border-radius: 14px;
+  background: rgba(20, 30, 40, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+.big-map-minimap-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+}
+
+.big-map-minimap canvas {
+  display: block;
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(15, 71, 100, 0.5);
+}
+
 .hud-hint {
   position: absolute;
   bottom: 0.85rem;

@@ -100,13 +100,16 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1, options = {}
   }
 
   // Bridges: left -> sand and sand -> hall
-  for (let x = 13; x <= 18; x++) {
+  const leftBridgeEnd = bigMap ? 16 : 18
+  const rightBridgeEnd = bigMap ? 45 : 46
+
+  for (let x = 13; x <= leftBridgeEnd; x++) {
     for (let y = 16; y <= 19; y++) {
       tiles[y * WORLD_COLS + x] = TILE.BRIDGE
     }
   }
 
-  for (let x = 43; x <= 46; x++) {
+  for (let x = 43; x <= rightBridgeEnd; x++) {
     for (let y = 16; y <= 19; y++) {
       tiles[y * WORLD_COLS + x] = TILE.BRIDGE
     }
@@ -224,6 +227,7 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1, options = {}
 
   return {
     seed,
+    bigMap,
     mapId: formatMapId(seed),
     mapNumber,
     tiles,

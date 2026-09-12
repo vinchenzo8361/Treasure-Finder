@@ -88,6 +88,7 @@ export function startNewMap(state, mode = 'normal') {
   const progress = cloneProgress(state.progress)
   progress.money = 0
   progress.equipmentLevel = 1
+  progress.bigMapDiggerOwned = false
   saveProgress(progress)
 
   return {
@@ -369,15 +370,45 @@ function nearestDiggable(map, player, state) {
 function startDig(state, gx, gy) {
   const eq = getEquipment(state.progress.equipmentLevel)
   const adminBlock = state.adminMode && state.adminBlock?.active && state.adminBlock.x === gx && state.adminBlock.y === gy
+  const useBigMapDigger = state.map?.bigMap && state.progress.bigMapDiggerOwned
+
+  const cells = useBigMapDigger ? buildBigMapDiggerCells(state.map, gx, gy) : [{ x: gx, y: gy }]
+
   return {
     ...state,
-    digging: { gx, gy, elapsed: 0, duration: eq.digTime, tool: eq.name, adminBlock },
+    digging: {
+      gx,
+      gy,
+      elapsed: 0,
+      duration: useBigMapDigger ? 5.0 : eq.digTime,
+      tool: useBigMapDigger ? '2×2 Miner' : eq.name,
+      adminBlock,
+      cells,
+    },
   }
+}
+
+function buildBigMapDiggerCells(map, gx, gy) {
+  const cells = []
+
+  for (let dy = 0; dy < 2; dy++) {
+    for (let dx = 0; dx < 2; dx++) {
+      const x = gx + dx
+      const y = gy + dy
+      if (isDiggable(map, x, y)) {
+        cells.push({ x, y })
+      }
+    }
+  }
+
+  return cells.length > 0 ? cells : [{ x: gx, y: gy }]
 }
 
 function finishDig(state) {
   const { gx, gy } = state.digging
-  const k = key(gx, gy)
+  const digTargets = Array.isArray(state.digging.cells) && state.digging.cells.length > 0
+    ? state.digging.cells
+    : [{ x: gx, y: gy }]
   const map = { ...state.map, holes: { ...state.map.holes }, sandPiles: { ...state.map.sandPiles } }
   let progress = cloneProgress(state.progress)
   let runStats = { ...state.runStats }
@@ -387,14 +418,13 @@ function finishDig(state) {
   let timerRunning = state.timerRunning
   let screen = state.screen
 
-  runStats = { ...runStats, digs: runStats.digs + 1 }
-  progress.totalDigs = (progress.totalDigs || 0) + 1
-
   if (state.digging.adminBlock) {
     const adminBlock = { ...state.adminBlock, active: false, respawnAt: state.timerMs + 10000 }
     progress.money += 50
     progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + 50
     runStats.coinsFromHoles += 50
+    runStats.digs = runStats.digs + 1
+    progress.totalDigs = (progress.totalDigs || 0) + 1
     floating.push(floatText((gx + 0.5) * CELL, (gy + 0.5) * CELL, '+50', '#f5c842'))
     saveProgress(progress)
 
@@ -413,62 +443,68 @@ function finishDig(state) {
     }
   }
 
-  let contents = { type: 'empty' }
+  const digLocations = [...state.digLocations]
+  runStats = { ...runStats, digs: runStats.digs + digTargets.length }
+  progress.totalDigs = (progress.totalDigs || 0) + digTargets.length
 
-  // Treasure?
-  if (map.treasure.x === gx && map.treasure.y === gy) {
-    contents = { type: 'treasure', treasure: map.treasure }
-  } else if (map.collectibleCells[k]) {
-    const id = map.collectibleCells[k]
-    contents = { type: 'collectible', id }
-  } else if (map.coinCells[k]) {
-    contents = { type: 'coins', amount: map.coinCells[k] }
-  }
+  for (const target of digTargets) {
+    const k = key(target.x, target.y)
+    if (map.holes[k]) continue
 
-  map.holes[k] = contents
-  map.dugCount = (map.dugCount || 0) + 1
+    let contents = { type: 'empty' }
 
-  const digLocations = [...state.digLocations, { x: gx, y: gy, contents: contents.type }]
-
-  // Spawn sand piles
-  spawnSandPiles(map, gx, gy)
-
-  const cx = (gx + 0.5) * CELL
-  const cy = (gy + 0.5) * CELL
-
-  if (contents.type === 'coins') {
-    progress.money += contents.amount
-    progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + contents.amount
-    runStats.coinsFromHoles += contents.amount
-    floating.push(floatText(cx, cy, `+${contents.amount}`, '#f5c842'))
-  } else if (contents.type === 'collectible') {
-    const id = contents.id
-    if (!progress.collectedIds.includes(id)) {
-      progress.collectedIds = [...progress.collectedIds, id]
+    if (map.treasure.x === target.x && map.treasure.y === target.y) {
+      contents = { type: 'treasure', treasure: map.treasure }
+    } else if (map.collectibleCells[k]) {
+      const id = map.collectibleCells[k]
+      contents = { type: 'collectible', id }
+    } else if (map.coinCells[k]) {
+      contents = { type: 'coins', amount: map.coinCells[k] }
     }
-    progress.money += COLLECTIBLE_COIN_REWARD
-    progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + COLLECTIBLE_COIN_REWARD
-    runStats.coinsFromCollectibles += COLLECTIBLE_COIN_REWARD
-    runStats.collectiblesFound = [...runStats.collectiblesFound, id]
-    const col = getCollectible(id)
-    floating.push(floatText(cx, cy - 10, '+20', '#7ec8ff'))
-    discovery = {
-      type: 'collectible',
-      id,
-      name: col?.name || id,
-      emoji: col?.emoji || '✨',
-      collection: progress.collectedIds.length,
+
+    map.holes[k] = contents
+    map.dugCount = (map.dugCount || 0) + 1
+    digLocations.push({ x: target.x, y: target.y, contents: contents.type })
+
+    spawnSandPiles(map, target.x, target.y)
+
+    const cx = (target.x + 0.5) * CELL
+    const cy = (target.y + 0.5) * CELL
+
+    if (contents.type === 'coins') {
+      progress.money += contents.amount
+      progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + contents.amount
+      runStats.coinsFromHoles += contents.amount
+      floating.push(floatText(cx, cy, `+${contents.amount}`, '#f5c842'))
+    } else if (contents.type === 'collectible') {
+      const id = contents.id
+      if (!progress.collectedIds.includes(id)) {
+        progress.collectedIds = [...progress.collectedIds, id]
+      }
+      progress.money += COLLECTIBLE_COIN_REWARD
+      progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + COLLECTIBLE_COIN_REWARD
+      runStats.coinsFromCollectibles += COLLECTIBLE_COIN_REWARD
+      runStats.collectiblesFound = [...runStats.collectiblesFound, id]
+      const col = getCollectible(id)
+      floating.push(floatText(cx, cy - 10, '+20', '#7ec8ff'))
+      discovery = {
+        type: 'collectible',
+        id,
+        name: col?.name || id,
+        emoji: col?.emoji || '✨',
+        collection: progress.collectedIds.length,
+      }
+    } else if (contents.type === 'treasure') {
+      timerRunning = false
+      discovery = {
+        type: 'treasure',
+        treasure: map.treasure,
+        timeMs: state.timerMs,
+      }
+      // Build results + trophy after dismiss — handled in completeTreasure
+    } else {
+      floating.push(floatText(cx, cy, '…', '#c4a882'))
     }
-  } else if (contents.type === 'treasure') {
-    timerRunning = false
-    discovery = {
-      type: 'treasure',
-      treasure: map.treasure,
-      timeMs: state.timerMs,
-    }
-    // Build results + trophy after dismiss — handled in completeTreasure
-  } else {
-    floating.push(floatText(cx, cy, '…', '#c4a882'))
   }
 
   saveProgress(progress)
@@ -651,6 +687,38 @@ function completeTreasure(state) {
     adminBlock: null,
     treasureFound: true,    hintLevel: 0,
     debugStatsOpen: false,  }
+}
+
+export function buyBigMapDigger(state) {
+  if (!state.map?.bigMap) {
+    return withToast(state, '2×2 Miner is only available in Big Map.', 2)
+  }
+
+  if (state.progress.bigMapDiggerOwned) {
+    return withToast(state, '2×2 Miner already owned.', 1.8)
+  }
+
+  if (state.progress.money < 169) {
+    return withToast(state, 'Not enough coins.', 1.8)
+  }
+
+  const progress = cloneProgress(state.progress)
+  progress.money -= 169
+  progress.bigMapDiggerOwned = true
+  progress.totalMoneySpent = (progress.totalMoneySpent || 0) + 169
+  const runStats = {
+    ...state.runStats,
+    moneySpent: state.runStats.moneySpent + 169,
+  }
+
+  saveProgress(progress)
+
+  return {
+    ...state,
+    progress,
+    runStats,
+    toast: { text: '2×2 Miner unlocked!', life: 2 },
+  }
 }
 
 export function buyHint(state) {

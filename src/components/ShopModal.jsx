@@ -1,6 +1,6 @@
 import { EQUIPMENT, getEquipment, sandCapacityCost } from '../game/engine.js'
 
-export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyHint, onClose }) {
+export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyHint, onBuyBigMapDigger, onClose }) {
   const { progress } = state
   const current = getEquipment(progress.equipmentLevel)
   const nextEq = progress.equipmentLevel < EQUIPMENT.length ? EQUIPMENT[progress.equipmentLevel] : null
@@ -8,6 +8,8 @@ export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyH
   const hintCosts = [25, 30, 50]
   const hintLevel = state.hintLevel || 0
   const nextHintCost = hintCosts[hintLevel]
+  const bigMapDiggerOwned = !!state.progress.bigMapDiggerOwned
+  const isBigMap = !!state.map?.bigMap
 
   return (
     <div className="modal-backdrop">
@@ -115,6 +117,39 @@ export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyH
                     Buy
                   </button>
                 </>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="shop-section">
+          <h3>Big Map Tools</h3>
+          <div className="shop-item next">
+            <div>
+              <strong>2×2 Miner</strong>
+              <div className="muted">
+                {isBigMap
+                  ? 'Digs a 2×2 square in 5.0s total.'
+                  : 'Available only in Big Map mode.'}
+              </div>
+            </div>
+            <div className="shop-item-action">
+              {bigMapDiggerOwned ? (
+                <span className="badge">OWNED</span>
+              ) : isBigMap ? (
+                <>
+                  <span>🪙 169</span>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={onBuyBigMapDigger}
+                    disabled={progress.money < 169}
+                  >
+                    Buy
+                  </button>
+                </>
+              ) : (
+                <span className="badge muted-badge">BIG MAP ONLY</span>
               )}
             </div>
           </div>

@@ -5,6 +5,7 @@ export function defaultProgress() {
     money: STARTING_MONEY,
     equipmentLevel: STARTING_EQUIPMENT,
     sandCapacity: STARTING_SAND_CAPACITY,
+    bigMapDiggerOwned: false,
     collectedIds: [],
     completedMaps: [],
     mapsCompleted: 0,
