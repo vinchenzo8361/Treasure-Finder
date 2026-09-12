@@ -38,7 +38,11 @@ export default function App() {
   const [state, setState] = useState(() => createInitialState())
 
   const play = useCallback(() => {
-    setState((s) => startNewMap(s))
+    setState((s) => startNewMap(s, 'normal'))
+  }, [])
+
+  const playBigMap = useCallback(() => {
+    setState((s) => startNewMap(s, 'big'))
   }, [])
 
   const toggleAdminMode = useCallback(() => {
@@ -124,6 +128,7 @@ export default function App() {
       <MainMenu
         state={state}
         onPlay={play}
+        onBigMap={playBigMap}
         onCollection={() => setState((s) => ({ ...s, screen: 'collection' }))}
         onTrophy={() => setState((s) => ({ ...s, screen: 'trophy' }))}
         onSettings={() => setState((s) => ({ ...s, screen: 'settings' }))}

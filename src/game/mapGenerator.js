@@ -21,8 +21,9 @@ function dist(ax, ay, bx, by) {
  * @param {string[]} collectedIds - permanently collected collectible ids
  * @param {number} mapNumber - sequential map count (1-based display)
  */
-export function generateMap(seed, collectedIds = [], mapNumber = 1) {
+export function generateMap(seed, collectedIds = [], mapNumber = 1, options = {}) {
   const rng = createRng(seed)
+  const bigMap = !!options.bigMap
   const tiles = new Uint8Array(WORLD_COLS * WORLD_ROWS)
   const diggable = []
   const decorations = []
@@ -58,8 +59,8 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   // --- Middle sand island — irregular diggable island ---
   const sandCx = 30
   const sandCy = 18
-  const rx = 11 + rng() * 1.5
-  const ry = 9 + rng() * 1.5
+  const rx = bigMap ? 16 + rng() * 2 : 11 + rng() * 1.5
+  const ry = bigMap ? 12 + rng() * 2 : 9 + rng() * 1.5
 
   for (let y = 2; y < WORLD_ROWS - 2; y++) {
     for (let x = 18; x < WORLD_COLS - 2; x++) {
@@ -90,8 +91,8 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   const hallCy = 18
   for (let y = 11; y <= 25; y++) {
     for (let x = 47; x <= 61; x++) {
-      const dx = (x - hallCx) / 9.2
-      const dy = (y - hallCy) / 8.4
+      const dx = (x - hallCx) / (bigMap ? 10.8 : 9.2)
+      const dy = (y - hallCy) / (bigMap ? 9.9 : 8.4)
       if (dx * dx + dy * dy < 1) {
         tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
       }

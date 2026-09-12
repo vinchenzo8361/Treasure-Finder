@@ -1,7 +1,7 @@
 import { COLLECTIBLE_COUNT } from '../data/collectibles.js'
 import { formatTime, getEquipment } from '../game/engine.js'
 
-export default function MainMenu({ state, onPlay, onCollection, onTrophy, onSettings }) {
+export default function MainMenu({ state, onPlay, onBigMap, onCollection, onTrophy, onSettings }) {
   const { progress } = state
   const eq = getEquipment(progress.equipmentLevel)
   const hasSave = progress.mapsCompleted > 0 || progress.collectedIds.length > 0 || progress.money > 0 || progress.equipmentLevel > 1
@@ -42,6 +42,9 @@ export default function MainMenu({ state, onPlay, onCollection, onTrophy, onSett
         <div className="menu-actions">
           <button type="button" className="btn btn-primary" onClick={onPlay}>
             {hasSave ? 'Continue Digging' : 'Start Digging'}
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onBigMap}>
+            Big Map
           </button>
           <button type="button" className="btn" onClick={onCollection}>
             Collection

@@ -74,10 +74,10 @@ function createAdminBlock() {
   }
 }
 
-export function startNewMap(state) {
+export function startNewMap(state, mode = 'normal') {
   const seed = randomSeed()
   const mapNumber = (state.progress.mapsCompleted || 0) + 1
-  const map = generateMap(seed, state.progress.collectedIds || [], mapNumber, state.progress)
+  const map = generateMap(seed, state.progress.collectedIds || [], mapNumber, { bigMap: mode === 'big' })
   const player = {
     x: map.start.x,
     y: map.start.y,
@@ -141,15 +141,6 @@ function buildHallSlots(progress, map) {
   }
 
   return [
-    {
-      kind: 'treasure',
-      id: 'treasure',
-      name: map.treasure.name,
-      emoji: map.treasure.emoji,
-      x: 49,
-      y: 12,
-      found: (progress.completedMaps || []).length > 0,
-    },
     ...collectibles,
   ]
 }
