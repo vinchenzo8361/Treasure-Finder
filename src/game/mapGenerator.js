@@ -50,18 +50,6 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
     }
   }
 
-  // Shop building footprint (walkable — player enters through the door)
-  for (let y = 14; y <= 17; y++) {
-    for (let x = 5; x <= 9; x++) {
-      tiles[y * WORLD_COLS + x] = TILE.SHOP_BUILDING
-    }
-  }
-
-  // Disposal machine tile
-  tiles[21 * WORLD_COLS + 6] = TILE.DISPOSAL
-  tiles[21 * WORLD_COLS + 7] = TILE.DISPOSAL
-  tiles[21 * WORLD_COLS + 8] = TILE.DISPOSAL
-
   // --- Sand island (right) — irregular blob, always includes bridge landing ---
   const sandCx = 36
   const sandCy = 18
@@ -92,6 +80,26 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
         tiles[y * WORLD_COLS + x] = TILE.SAND
         diggable.push({ x, y })
       }
+    }
+  }
+
+  // --- Right-side hall island for seen collectibles / treasure ---
+  const hallCx = 51
+  const hallCy = 18
+  for (let y = 12; y <= 24; y++) {
+    for (let x = 44; x <= 56; x++) {
+      const dx = (x - hallCx) / 4.2
+      const dy = (y - hallCy) / 5.2
+      if (dx * dx + dy * dy < 1) {
+        tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
+      }
+    }
+  }
+
+  // Small walkway from the sand island to the hall island
+  for (let x = 40; x <= 43; x++) {
+    for (let y = 16; y <= 19; y++) {
+      tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
     }
   }
 

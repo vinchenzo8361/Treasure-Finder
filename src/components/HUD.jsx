@@ -1,7 +1,7 @@
 import { getEquipment, formatTime } from '../game/engine.js'
 import { COLLECTIBLE_COUNT } from '../data/collectibles.js'
 
-export default function HUD({ state, onMenu, onAdminToggle, onEndRun, onAddMoney }) {
+export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, onEndRun, onAddMoney }) {
   const { progress, map, player, timerMs, digging } = state
   const eq = getEquipment(progress.equipmentLevel)
 
@@ -79,6 +79,12 @@ export default function HUD({ state, onMenu, onAdminToggle, onEndRun, onAddMoney
       {state.treasureFound && !state.results && (
         <button type="button" className="end-run-btn" onClick={onEndRun}>
           End Run
+        </button>
+      )}
+
+      {state.adminMode && (
+        <button type="button" className="debug-stats-btn" onClick={onDebugStatsToggle}>
+          Debug Stats
         </button>
       )}
 

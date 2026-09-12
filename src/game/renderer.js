@@ -67,9 +67,8 @@ export function drawWorld(ctx, state, camera, w, h) {
     ctx.stroke()
   }
 
-  // Shop & disposal markers
-  drawShopBuilding(ctx)
-  drawDisposal(ctx)
+  // Right-side collection hall and walkable bridge
+  drawHallSlots(ctx, map.hallSlots)
   drawBridgeRails(ctx)
 
   if (state.adminMode && state.adminBlock?.active) {
@@ -84,6 +83,10 @@ export function drawWorld(ctx, state, camera, w, h) {
     for (const [keyValue, id] of Object.entries(map.collectibleCells)) {
       drawCollectibleXray(ctx, keyValue, id)
     }
+  }
+
+  if (state.hintLevel > 0 && map.treasure) {
+    drawHintArea(ctx, state)
   }
 
   // Player
@@ -379,6 +382,50 @@ function drawCollectibleXray(ctx, keyValue, id) {
   ctx.font = 'bold 8px "Segoe UI", sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText(id.slice(0, 1).toUpperCase(), cx, cy + 2)
+}
+
+function drawHallSlots(ctx, hallSlots) {
+  if (!hallSlots) return
+
+  for (const slot of hallSlots) {
+    const px = (slot.x + 0.5) * CELL
+    const py = (slot.y + 0.5) * CELL
+    const w = CELL * 0.72
+    const h = CELL * 0.72
+
+    ctx.fillStyle = slot.found ? 'rgba(244, 188, 92, 0.45)' : 'rgba(255, 255, 255, 0.18)'
+    ctx.fillRect(px - w / 2, py - h / 2, w, h)
+
+    ctx.strokeStyle = slot.found ? '#f0b54c' : 'rgba(255,255,255,0.4)'
+    ctx.lineWidth = 2
+    ctx.strokeRect(px - w / 2, py - h / 2, w, h)
+
+    ctx.fillStyle = slot.found ? '#fff6d8' : 'rgba(255,255,255,0.25)'
+    ctx.font = 'bold 10px "Segoe UI", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(slot.found ? slot.emoji : '·', px, py + 3)
+  }
+}
+
+function drawHintArea(ctx, state) {
+  const map = state.map
+  const hintSizes = { 1: 70, 2: 50, 3: 25 }
+  const size = hintSizes[state.hintLevel] || 25
+  const seedShiftX = ((map.seed * 17) % 7) - 3
+  const seedShiftY = ((map.seed * 29) % 7) - 3
+  const boxLeft = clamp(map.treasure.x - Math.floor(size / 2) + seedShiftX * 2, 0, WORLD_COLS - size)
+  const boxTop = clamp(map.treasure.y - Math.floor(size / 2) + seedShiftY * 2, 0, WORLD_ROWS - size)
+
+  ctx.fillStyle = 'rgba(255, 92, 92, 0.18)'
+  ctx.fillRect(boxLeft * CELL, boxTop * CELL, size * CELL, size * CELL)
+
+  ctx.strokeStyle = 'rgba(255, 92, 92, 0.9)'
+  ctx.lineWidth = 2
+  ctx.strokeRect(boxLeft * CELL + 1, boxTop * CELL + 1, size * CELL - 2, size * CELL - 2)
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
 }
 
 function drawBridgeRails(ctx) {

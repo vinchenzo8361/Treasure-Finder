@@ -193,6 +193,24 @@ button {
   transform-origin: center;
 }
 
+.debug-stats-btn {
+  position: absolute;
+  right: 15rem;
+  bottom: 1rem;
+  pointer-events: auto;
+  border: 1px solid rgba(80, 50, 20, 0.2);
+  background: linear-gradient(180deg, #f0a04a, #d9772e);
+  color: #fffaf2;
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.debug-panel {
+  width: min(620px, 100%);
+}
+
 .btn:hover,
 .hud-btn:hover {
   transform: translateY(-1px);

@@ -1,5 +1,5 @@
 import { getEquipment, sandCapacityCost, EQUIPMENT } from '../data/equipment.js'
-import { COLLECTIBLE_COIN_REWARD, getCollectible } from '../data/collectibles.js'
+import { COLLECTIBLE_COIN_REWARD, getCollectible, COLLECTIBLES } from '../data/collectibles.js'
 import {
   CELL,
   PLAYER_SPEED,
@@ -46,6 +46,7 @@ export function createInitialState() {
     adminMode: false,
     adminBlock: null,
     treasureFound: false,
+    hintLevel: 0,
   }
 }
 
@@ -76,7 +77,7 @@ function createAdminBlock() {
 export function startNewMap(state) {
   const seed = randomSeed()
   const mapNumber = (state.progress.mapsCompleted || 0) + 1
-  const map = generateMap(seed, state.progress.collectedIds || [], mapNumber)
+  const map = generateMap(seed, state.progress.collectedIds || [], mapNumber, state.progress)
   const player = {
     x: map.start.x,
     y: map.start.y,
@@ -93,7 +94,10 @@ export function startNewMap(state) {
     ...state,
     progress,
     screen: 'playing',
-    map,
+    map: {
+      ...map,
+      hallSlots: buildHallSlots(progress, map),
+    },
     player,
     digging: null,
     timerMs: 0,
@@ -113,7 +117,41 @@ export function startNewMap(state) {
     adminMode: false,
     adminBlock: null,
     treasureFound: false,
+    hintLevel: 0,
   }
+}
+
+function buildHallSlots(progress, map) {
+  const collectibles = []
+  const foundIds = new Set(progress.collectedIds || [])
+
+  for (let i = 0; i < COLLECTIBLES.length; i++) {
+    const collectible = COLLECTIBLES[i]
+    const row = Math.floor(i / 5)
+    const col = i % 5
+    collectibles.push({
+      kind: 'collectible',
+      id: collectible.id,
+      name: collectible.name,
+      emoji: collectible.emoji,
+      x: 49 + col * 2,
+      y: 14 + row * 2,
+      found: foundIds.has(collectible.id),
+    })
+  }
+
+  return [
+    {
+      kind: 'treasure',
+      id: 'treasure',
+      name: map.treasure.name,
+      emoji: map.treasure.emoji,
+      x: 48,
+      y: 10,
+      found: (progress.completedMaps || []).length > 0,
+    },
+    ...collectibles,
+  ]
 }
 
 export function tick(state, dt, keys) {
@@ -270,6 +308,8 @@ function nearShop(map, player) {
   const gy = Math.floor(player.y / CELL)
   // Standing on the shop building opens it
   if (getTile(map, gx, gy) === TILE.SHOP_BUILDING) return true
+  // Shop island center area acts as the shop entry point now that the barn is removed
+  if (getTile(map, gx, gy) === TILE.SHOP_GROUND && gx >= 4 && gx <= 10 && gy >= 14 && gy <= 18) return true
   // Door / front of barn
   const doorX = 7 * CELL
   const doorY = 17.6 * CELL
@@ -618,7 +658,39 @@ function completeTreasure(state) {
     results: run,
     adminMode: false,
     adminBlock: null,
-    treasureFound: true,
+    treasureFound: true,    hintLevel: 0,
+    debugStatsOpen: false,  }
+}
+
+export function buyHint(state) {
+  const costs = [25, 30, 50]
+  const nextHintLevel = state.hintLevel || 0
+  if (nextHintLevel >= costs.length) {
+    return withToast(state, 'All hints already unlocked.', 1.8)
+  }
+
+  const cost = costs[nextHintLevel]
+  if (state.progress.money < cost) {
+    return withToast(state, 'Not enough coins.', 1.8)
+  }
+
+  const progress = cloneProgress(state.progress)
+  progress.money -= cost
+  progress.totalMoneySpent = (progress.totalMoneySpent || 0) + cost
+
+  const runStats = {
+    ...state.runStats,
+    moneySpent: state.runStats.moneySpent + cost,
+  }
+
+  saveProgress(progress)
+
+  return {
+    ...state,
+    progress,
+    runStats,
+    hintLevel: nextHintLevel + 1,
+    toast: { text: `Hint ${nextHintLevel + 1} unlocked!`, life: 2 },
   }
 }
 

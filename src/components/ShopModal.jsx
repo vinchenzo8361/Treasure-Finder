@@ -1,10 +1,13 @@
 import { EQUIPMENT, getEquipment, sandCapacityCost } from '../game/engine.js'
 
-export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onClose }) {
+export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyHint, onClose }) {
   const { progress } = state
   const current = getEquipment(progress.equipmentLevel)
   const nextEq = progress.equipmentLevel < EQUIPMENT.length ? EQUIPMENT[progress.equipmentLevel] : null
   const capCost = sandCapacityCost(progress.sandCapacity)
+  const hintCosts = [25, 30, 50]
+  const hintLevel = state.hintLevel || 0
+  const nextHintCost = hintCosts[hintLevel]
 
   return (
     <div className="modal-backdrop">
@@ -79,6 +82,40 @@ export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onClos
               >
                 Upgrade
               </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="shop-section">
+          <h3>Hints</h3>
+          <div className="shop-item next">
+            <div>
+              <strong>
+                {hintLevel >= hintCosts.length ? 'All hints unlocked' : `Hint ${hintLevel + 1}`}
+              </strong>
+              <div className="muted">
+                {hintLevel === 0 && 'Reveal a 70×70 search area around the treasure.'}
+                {hintLevel === 1 && 'Reveal a 50×50 search area around the treasure.'}
+                {hintLevel === 2 && 'Reveal a 25×25 search area around the treasure.'}
+                {hintLevel >= 3 && 'You have unlocked every hinted search area.'}
+              </div>
+            </div>
+            <div className="shop-item-action">
+              {hintLevel >= hintCosts.length ? (
+                <span className="badge">MAXED</span>
+              ) : (
+                <>
+                  <span>🪙 {nextHintCost}</span>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={onBuyHint}
+                    disabled={progress.money < nextHintCost}
+                  >
+                    Buy
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>

@@ -5,6 +5,7 @@ import {
   dismissDiscovery,
   buyEquipment,
   buySandCapacity,
+  buyHint,
   fullReset,
   endRun,
 } from './game/engine.js'
@@ -34,6 +35,7 @@ export default function App() {
           ...s,
           adminMode: false,
           adminBlock: null,
+          debugStatsOpen: false,
           toast: { text: 'Admin mode disabled.', life: 1.8 },
         }
       }
@@ -52,7 +54,6 @@ export default function App() {
       return {
         ...s,
         adminMode: true,
-        adminBlock: { x: 2, y: 18, active: true, respawnAt: 0 },
       }
     })
   }, [])
@@ -65,6 +66,7 @@ export default function App() {
       adminMode: false,
       adminBlock: null,
       treasureFound: false,
+      debugStatsOpen: false,
       digging: null,
     }))
   }, [])
@@ -91,6 +93,13 @@ export default function App() {
       saveProgress(progress)
       return { ...s, progress, floating }
     })
+  }, [])
+
+  const toggleDebugStats = useCallback(() => {
+    setState((s) => ({
+      ...s,
+      debugStatsOpen: !s.debugStatsOpen,
+    }))
   }, [])
 
   if (state.screen === 'menu') {
@@ -169,9 +178,11 @@ export default function App() {
             adminMode: false,
             adminBlock: null,
             treasureFound: false,
+            debugStatsOpen: false,
           }))
         }
         onAdminToggle={toggleAdminMode}
+        onDebugStatsToggle={toggleDebugStats}
         onEndRun={() => setState((s) => endRun(s))}
         onAddMoney={addAdminMoney}
       />
@@ -180,8 +191,12 @@ export default function App() {
           state={state}
           onBuyEquipment={() => setState((s) => buyEquipment(s))}
           onBuyCapacity={() => setState((s) => buySandCapacity(s))}
+          onBuyHint={() => setState((s) => buyHint(s))}
           onClose={() => setState((s) => ({ ...s, shopOpen: false }))}
         />
+      )}
+      {state.adminMode && state.debugStatsOpen && (
+        <DebugStatsPanel state={state} onClose={() => setState((s) => ({ ...s, debugStatsOpen: false }))} />
       )}
       <DiscoveryOverlay
         discovery={state.discovery}
@@ -189,4 +204,66 @@ export default function App() {
       />
     </div>
   )
+}
+
+function DebugStatsPanel({ state, onClose }) {
+  if (!state.map) return null
+
+  const remainingDiggable = Math.max(0, state.map.diggableCount - (state.map.dugCount || 0))
+  const remainingCoins = Object.keys(state.map.coinCells || {}).filter((k) => !state.map.holes?.[k]).length
+  const remainingCollectibles = Object.keys(state.map.collectibleCells || {}).filter((k) => !state.map.holes?.[k]).length
+
+  const stats = [
+    ['Map ID', state.map.mapId],
+    ['Map #', state.map.mapNumber],
+    ['Treasure Found', state.treasureFound ? 'Yes' : 'No'],
+    ['Collectibles Found', `${state.runStats.collectiblesFound.length}`],
+    ['Collectibles Left', String(remainingCollectibles)],
+    ['Remaining Diggable', String(remainingDiggable)],
+    ['Remaining Coins', String(remainingCoins)],
+    ['Current Money', formatMoney(state.progress.money)],
+    ['Lifetime Earned', formatMoney(state.progress.totalCoinsEarned || 0)],
+    ['Equipment', String(state.progress.equipmentLevel)],
+    ['Sand Capacity', String(state.progress.sandCapacity)],
+    ['Digs This Run', String(state.runStats.digs)],
+    ['Time', formatTime(state.timerMs)],
+    ['Distance', `${Math.round(state.runStats.distance)}m`],
+    ['Hints Unlocked', String(state.hintLevel || 0)],
+  ]
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal debug-panel">
+        <header className="modal-header">
+          <div>
+            <h2>Debug Stats</h2>
+            <p className="muted">Admin-only diagnostics for this run.</p>
+          </div>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            Close
+          </button>
+        </header>
+
+        <div className="stats-grid">
+          {stats.map(([label, value]) => (
+            <div key={label} className="stat">
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function formatMoney(n) {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1)
+}
+
+function formatTime(ms) {
+  const total = Math.floor(ms / 1000)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }

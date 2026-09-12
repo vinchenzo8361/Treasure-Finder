@@ -39,6 +39,10 @@ export default function TrophyRoom({ state, onBack, onViewRun }) {
               {state.progress.collectedIds.length} / {COLLECTIBLE_COUNT}
             </strong>
           </div>
+          <div>
+            <span>Lifetime Earnings</span>
+            <strong>{state.progress.totalCoinsEarned || 0}</strong>
+          </div>
         </div>
 
         {maps.length === 0 ? (
