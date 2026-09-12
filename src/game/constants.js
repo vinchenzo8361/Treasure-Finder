@@ -8,7 +8,7 @@ export const INTERACT_RANGE = 44
 
 export const COLLECTIBLE_ISLAND_CHANCE = 0.25
 export const COLLECTIBLES_PER_ISLAND = 3
-export const SAND_PILE_SPAWN_CHANCE = 0.3
+export const SAND_PILE_SPAWN_CHANCE = 0.40
 export const SAND_DISPOSAL_RATE = 0.5
 
 export const STARTING_MONEY = 0

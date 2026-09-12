@@ -43,6 +43,9 @@ export function createInitialState() {
     shopOpen: false,
     message: null,
     keys: {},
+    adminMode: false,
+    adminBlock: null,
+    treasureFound: false,
   }
 }
 
@@ -61,6 +64,15 @@ function emptyRunStats() {
   }
 }
 
+function createAdminBlock() {
+  return {
+    x: 2,
+    y: 18,
+    active: true,
+    respawnAt: 0,
+  }
+}
+
 export function startNewMap(state) {
   const seed = randomSeed()
   const mapNumber = (state.progress.mapsCompleted || 0) + 1
@@ -71,8 +83,15 @@ export function startNewMap(state) {
     carriedSand: 0,
     facing: 1,
   }
+
+  const progress = cloneProgress(state.progress)
+  progress.money = 0
+  progress.equipmentLevel = 1
+  saveProgress(progress)
+
   return {
     ...state,
+    progress,
     screen: 'playing',
     map,
     player,
@@ -83,7 +102,7 @@ export function startNewMap(state) {
     digLocations: [],
     runStats: {
       ...emptyRunStats(),
-      startMoney: state.progress.money,
+      startMoney: 0,
     },
     toast: null,
     floating: [],
@@ -91,6 +110,9 @@ export function startNewMap(state) {
     results: null,
     shopOpen: false,
     message: null,
+    adminMode: false,
+    adminBlock: null,
+    treasureFound: false,
   }
 }
 
@@ -103,6 +125,12 @@ export function tick(state, dt, keys) {
   // Timer continues while exploring, digging, shopping, disposing, etc.
   if (state.timerRunning) {
     updates.timerMs = state.timerMs + dt * 1000
+  }
+
+  if (state.adminMode && state.adminBlock && !state.adminBlock.active && updates.timerMs != null) {
+    if (updates.timerMs >= state.adminBlock.respawnAt) {
+      updates.adminBlock = { ...state.adminBlock, active: true, respawnAt: 0 }
+    }
   }
 
   // Pause movement/dig while overlays are open (timer still runs)
@@ -229,7 +257,7 @@ export function tryInteract(state) {
   }
 
   // Dig nearby undug sand
-  const digTarget = nearestDiggable(map, player)
+  const digTarget = nearestDiggable(map, player, state)
   if (digTarget) {
     return startDig(state, digTarget.x, digTarget.y)
   }
@@ -274,7 +302,7 @@ function nearestSandPile(map, player) {
   return best
 }
 
-function nearestDiggable(map, player) {
+function nearestDiggable(map, player, state) {
   const gx = Math.floor(player.x / CELL)
   const gy = Math.floor(player.y / CELL)
   let best = null
@@ -293,14 +321,26 @@ function nearestDiggable(map, player) {
       }
     }
   }
+
+  if (state.adminMode && state.adminBlock?.active) {
+    const cx = (state.adminBlock.x + 0.5) * CELL
+    const cy = (state.adminBlock.y + 0.5) * CELL
+    const d = Math.hypot(player.x - cx, player.y - cy)
+    if (d < bestD) {
+      bestD = d
+      best = { x: state.adminBlock.x, y: state.adminBlock.y, admin: true }
+    }
+  }
+
   return best
 }
 
 function startDig(state, gx, gy) {
   const eq = getEquipment(state.progress.equipmentLevel)
+  const adminBlock = state.adminMode && state.adminBlock?.active && state.adminBlock.x === gx && state.adminBlock.y === gy
   return {
     ...state,
-    digging: { gx, gy, elapsed: 0, duration: eq.digTime, tool: eq.name },
+    digging: { gx, gy, elapsed: 0, duration: eq.digTime, tool: eq.name, adminBlock },
   }
 }
 
@@ -318,6 +358,29 @@ function finishDig(state) {
 
   runStats = { ...runStats, digs: runStats.digs + 1 }
   progress.totalDigs = (progress.totalDigs || 0) + 1
+
+  if (state.digging.adminBlock) {
+    const adminBlock = { ...state.adminBlock, active: false, respawnAt: state.timerMs + 20000 }
+    progress.money += 50
+    progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + 50
+    runStats.coinsFromHoles += 50
+    floating.push(floatText((gx + 0.5) * CELL, (gy + 0.5) * CELL, '+50', '#f5c842'))
+    saveProgress(progress)
+
+    return {
+      ...state,
+      progress,
+      digging: null,
+      digLocations: [...state.digLocations, { x: gx, y: gy, contents: 'admin' }],
+      runStats,
+      floating,
+      adminBlock,
+      discovery,
+      timerRunning,
+      screen,
+      results,
+    }
+  }
 
   let contents = { type: 'empty' }
 
@@ -484,9 +547,17 @@ function withToast(state, text, life = 2) {
 export function dismissDiscovery(state) {
   if (!state.discovery) return state
   if (state.discovery.type === 'treasure') {
-    return completeTreasure(state)
+    return {
+      ...state,
+      discovery: null,
+      treasureFound: true,
+    }
   }
   return { ...state, discovery: null }
+}
+
+export function endRun(state) {
+  return completeTreasure(state)
 }
 
 function completeTreasure(state) {
@@ -545,6 +616,9 @@ function completeTreasure(state) {
     timerRunning: false,
     screen: 'results',
     results: run,
+    adminMode: false,
+    adminBlock: null,
+    treasureFound: true,
   }
 }
 

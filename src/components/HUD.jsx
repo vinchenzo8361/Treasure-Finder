@@ -1,7 +1,7 @@
 import { getEquipment, formatTime } from '../game/engine.js'
 import { COLLECTIBLE_COUNT } from '../data/collectibles.js'
 
-export default function HUD({ state, onMenu }) {
+export default function HUD({ state, onMenu, onAdminToggle, onEndRun, onAddMoney }) {
   const { progress, map, player, timerMs, digging } = state
   const eq = getEquipment(progress.equipmentLevel)
 
@@ -53,8 +53,8 @@ export default function HUD({ state, onMenu }) {
       {digging && (
         <div className="dig-overlay">
           <div className="dig-card">
-            <div className="dig-title">DIGGING…</div>
-            <div className="dig-tool">{digging.tool}</div>
+            <div className="dig-title">LOADING…</div>
+            <div className="dig-tool">{digging.tool} • digging</div>
             <div className="dig-bar">
               <div
                 className="dig-bar-fill"
@@ -75,6 +75,26 @@ export default function HUD({ state, onMenu }) {
       <div className="hud-hint">
         WASD / Arrows to move · E or Space / Click to dig, pick up sand, shop & dispose
       </div>
+
+      {state.treasureFound && !state.results && (
+        <button type="button" className="end-run-btn" onClick={onEndRun}>
+          End Run
+        </button>
+      )}
+
+      {state.adminMode && (
+        <button type="button" className="money-btn" onClick={onAddMoney}>
+          Money
+        </button>
+      )}
+
+      <button
+        type="button"
+        className={`admin-btn ${state.adminMode ? 'admin-btn-on' : ''}`}
+        onClick={onAdminToggle}
+      >
+        {state.adminMode ? 'Admin ON' : 'Admin Mode'}
+      </button>
     </div>
   )
 }

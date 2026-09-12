@@ -60,6 +60,7 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   // Disposal machine tile
   tiles[21 * WORLD_COLS + 6] = TILE.DISPOSAL
   tiles[21 * WORLD_COLS + 7] = TILE.DISPOSAL
+  tiles[21 * WORLD_COLS + 8] = TILE.DISPOSAL
 
   // --- Sand island (right) — irregular blob, always includes bridge landing ---
   const sandCx = 36
@@ -138,9 +139,9 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   const treasureCell = pick(rng, specialPool)
   const treasureType = pick(rng, TREASURES)
 
-  // --- Coins (about 12–20% of diggable cells) ---
+  // --- Coins (about 30–45% of diggable cells) ---
   const coinCells = {}
-  const coinCount = Math.floor(diggableUnique.length * (0.12 + rng() * 0.08))
+  const coinCount = Math.floor(diggableUnique.length * (0.30 + rng() * 0.15))
   const coinCandidates = shuffle(rng, diggableUnique.filter((c) => !(c.x === treasureCell.x && c.y === treasureCell.y)))
   for (let i = 0; i < coinCount && i < coinCandidates.length; i++) {
     const c = coinCandidates[i]
@@ -193,6 +194,9 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   // Validate
   if (!treasureCell || tiles[treasureCell.y * WORLD_COLS + treasureCell.x] !== TILE.SAND) {
     throw new Error('Invalid treasure placement')
+  }
+  if (collectibleCells[key(treasureCell.x, treasureCell.y)]) {
+    throw new Error('Treasure and collectible cannot share a hole')
   }
   if (placedCollectibles.length > COLLECTIBLES_PER_ISLAND) {
     throw new Error('Too many collectibles')

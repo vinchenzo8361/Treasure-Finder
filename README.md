@@ -24,4 +24,4 @@ Output is in `dist/` and can be hosted on any static host.
 
 ## Progress
 
-Permanent collection, equipment, sand capacity, money, and Trophy Room runs are saved in `localStorage`.
+Permanent collection, equipment, sand capacity, and Trophy Room runs are saved in `localStorage`. Coins reset every map, so each map has its own fresh money total.

@@ -3,6 +3,8 @@ import { CELL, WORLD_COLS, WORLD_ROWS } from '../game/constants.js'
 import { drawWorld } from '../game/renderer.js'
 import { tick, tryInteract } from '../game/engine.js'
 
+const VIEWPORT_ZOOM = 0.73
+
 export default function GameCanvas({ state, setState }) {
   const canvasRef = useRef(null)
   const keysRef = useRef({})
@@ -13,7 +15,11 @@ export default function GameCanvas({ state, setState }) {
   stateRef.current = state
 
   useEffect(() => {
-    const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight })
+    const onResize = () => {
+      const w = Math.max(800, Math.round(window.innerWidth * VIEWPORT_ZOOM))
+      const h = Math.max(600, Math.round(window.innerHeight * VIEWPORT_ZOOM))
+      setSize({ w, h })
+    }
     onResize()
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)

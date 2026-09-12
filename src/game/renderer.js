@@ -72,6 +72,20 @@ export function drawWorld(ctx, state, camera, w, h) {
   drawDisposal(ctx)
   drawBridgeRails(ctx)
 
+  if (state.adminMode && state.adminBlock?.active) {
+    drawAdminBlock(ctx, state.adminBlock)
+  }
+
+  if (state.adminMode && map.treasure) {
+    drawTreasureXray(ctx, map.treasure)
+  }
+
+  if (state.adminMode && map.collectibleCells) {
+    for (const [keyValue, id] of Object.entries(map.collectibleCells)) {
+      drawCollectibleXray(ctx, keyValue, id)
+    }
+  }
+
   // Player
   drawPlayer(ctx, player, digging)
 
@@ -281,20 +295,90 @@ function drawShopBuilding(ctx) {
 }
 
 function drawDisposal(ctx) {
-  const x = 5.6 * CELL
-  const y = 20.3 * CELL
+  const x = 5.45 * CELL
+  const y = 20.15 * CELL
   ctx.fillStyle = '#5a6a70'
-  ctx.fillRect(x, y, CELL * 2.2, CELL * 1.6)
+  ctx.fillRect(x, y, CELL * 2.95, CELL * 1.85)
   ctx.fillStyle = '#3a4a50'
-  ctx.fillRect(x + 8, y + 6, CELL * 1.5, CELL * 0.9)
+  ctx.fillRect(x + 9, y + 6, CELL * 2.1, CELL * 1.0)
   ctx.fillStyle = '#8af0a0'
   ctx.beginPath()
-  ctx.arc(x + CELL * 1.1, y + 10, 4, 0, Math.PI * 2)
+  ctx.arc(x + CELL * 1.5, y + 11, 4.5, 0, Math.PI * 2)
   ctx.fill()
   ctx.fillStyle = '#dfe8ec'
   ctx.font = 'bold 8px "Segoe UI", sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('SAND BIN', x + CELL * 1.1, y + CELL * 1.45)
+  ctx.fillText('SAND BIN', x + CELL * 1.5, y + CELL * 1.55)
+}
+
+function drawAdminBlock(ctx, adminBlock) {
+  const px = adminBlock.x * CELL
+  const py = adminBlock.y * CELL
+
+  ctx.fillStyle = 'rgba(255, 230, 120, 0.35)'
+  ctx.fillRect(px - 2, py - 2, CELL + 4, CELL + 4)
+
+  ctx.beginPath()
+  ctx.ellipse(px + CELL / 2, py + CELL / 2, CELL * 0.85, CELL * 0.85, 0, 0, Math.PI * 2)
+  ctx.fillStyle = 'rgba(255, 214, 80, 0.2)'
+  ctx.fill()
+
+  ctx.strokeStyle = '#ffe77a'
+  ctx.lineWidth = 3
+  ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2)
+
+  ctx.fillStyle = '#f7bf4d'
+  ctx.fillRect(px + 6, py + 6, CELL - 12, CELL - 12)
+
+  ctx.fillStyle = '#fff1ad'
+  ctx.fillRect(px + 10, py + 10, CELL - 20, CELL - 20)
+}
+
+function drawTreasureXray(ctx, treasure) {
+  const cx = (treasure.x + 0.5) * CELL
+  const cy = (treasure.y + 0.5) * CELL
+
+  ctx.beginPath()
+  ctx.arc(cx, cy, 14, 0, Math.PI * 2)
+  ctx.fillStyle = 'rgba(46, 204, 113, 0.45)'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.arc(cx, cy, 7, 0, Math.PI * 2)
+  ctx.fillStyle = '#2ee673'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(cx, cy - 12)
+  ctx.lineTo(cx + 6, cy - 18)
+  ctx.lineTo(cx + 12, cy)
+  ctx.lineTo(cx, cy + 12)
+  ctx.lineTo(cx - 12, cy)
+  ctx.lineTo(cx - 6, cy - 18)
+  ctx.closePath()
+  ctx.fillStyle = 'rgba(104, 255, 166, 0.95)'
+  ctx.fill()
+}
+
+function drawCollectibleXray(ctx, keyValue, id) {
+  const [x, y] = keyValue.split(',').map(Number)
+  const cx = (x + 0.5) * CELL
+  const cy = (y + 0.5) * CELL
+
+  ctx.beginPath()
+  ctx.arc(cx, cy, 11, 0, Math.PI * 2)
+  ctx.fillStyle = 'rgba(255, 89, 89, 0.42)'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2)
+  ctx.fillStyle = '#ff4d4d'
+  ctx.fill()
+
+  ctx.fillStyle = '#fff1f1'
+  ctx.font = 'bold 8px "Segoe UI", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText(id.slice(0, 1).toUpperCase(), cx, cy + 2)
 }
 
 function drawBridgeRails(ctx) {

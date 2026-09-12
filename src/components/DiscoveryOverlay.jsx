@@ -32,9 +32,10 @@ export default function DiscoveryOverlay({ discovery, onContinue }) {
           <h2>Treasure Found!</h2>
           <div className="discovery-emoji big">{discovery.treasure.emoji}</div>
           <p className="discovery-name">{discovery.treasure.name}</p>
+          <p className="muted">You can end the run whenever you want.</p>
           <p className="muted">Time: {formatTime(discovery.timeMs)}</p>
           <button type="button" className="btn btn-primary" onClick={onContinue}>
-            View Results
+            Continue
           </button>
         </div>
       </div>
