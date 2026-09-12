@@ -124,13 +124,16 @@ function BigMapMinimap({ state }) {
       tiles: Array.from(state.map.tiles),
     }
 
-    drawRunMap(ctx, run, canvas.width, canvas.height)
-  }, [state.map])
+    drawRunMap(ctx, run, canvas.width, canvas.height, {
+      showTreasure: false,
+      player: state.player,
+    })
+  }, [state.map, state.player])
 
   return (
     <div className="big-map-minimap">
       <div className="big-map-minimap-label">Big Map</div>
-      <canvas ref={canvasRef} width={120} height={120} />
+      <canvas ref={canvasRef} width={144} height={144} />
     </div>
   )
 }

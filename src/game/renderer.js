@@ -562,8 +562,9 @@ function drawPlayer(ctx, player, digging) {
 }
 
 /** Mini map for trophy room */
-export function drawRunMap(ctx, run, w, h) {
+export function drawRunMap(ctx, run, w, h, options = {}) {
   if (!run || !run.tiles) return
+  const { showTreasure = true, player = null } = options
   const scaleX = w / (WORLD_COLS * CELL)
   const scaleY = h / (WORLD_ROWS * CELL)
   const scale = Math.min(scaleX, scaleY)
@@ -618,8 +619,21 @@ export function drawRunMap(ctx, run, w, h) {
     ctx.fill()
   }
 
+  // Player marker for live minimap
+  if (player) {
+    ctx.fillStyle = '#f87171'
+    ctx.beginPath()
+    ctx.arc(ox + player.x * scale, oy + player.y * scale, 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(ox + player.x * scale, oy + player.y * scale, 8, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(248, 113, 113, 0.75)'
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+  }
+
   // Treasure
-  if (run.treasure) {
+  if (showTreasure && run.treasure) {
     ctx.fillStyle = '#fbbf24'
     ctx.beginPath()
     ctx.arc(
