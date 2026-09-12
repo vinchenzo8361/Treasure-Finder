@@ -1,6 +1,6 @@
 export const CELL = 33.6
-export const WORLD_COLS = 58
-export const WORLD_ROWS = 38
+export const WORLD_COLS = 62
+export const WORLD_ROWS = 42
 
 export const PLAYER_SPEED = 110 // px per second
 export const PLAYER_RADIUS = 10

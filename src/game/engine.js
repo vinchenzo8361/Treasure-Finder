@@ -134,7 +134,7 @@ function buildHallSlots(progress, map) {
       id: collectible.id,
       name: collectible.name,
       emoji: collectible.emoji,
-      x: 45 + col * 2,
+      x: 50 + col * 2,
       y: 14 + row * 2,
       found: foundIds.has(collectible.id),
     })
@@ -146,7 +146,7 @@ function buildHallSlots(progress, map) {
       id: 'treasure',
       name: map.treasure.name,
       emoji: map.treasure.emoji,
-      x: 46,
+      x: 49,
       y: 12,
       found: (progress.completedMaps || []).length > 0,
     },
@@ -400,7 +400,7 @@ function finishDig(state) {
   progress.totalDigs = (progress.totalDigs || 0) + 1
 
   if (state.digging.adminBlock) {
-    const adminBlock = { ...state.adminBlock, active: false, respawnAt: state.timerMs + 20000 }
+    const adminBlock = { ...state.adminBlock, active: false, respawnAt: state.timerMs + 10000 }
     progress.money += 50
     progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + 50
     runStats.coinsFromHoles += 50

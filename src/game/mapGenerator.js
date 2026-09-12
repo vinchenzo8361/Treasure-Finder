@@ -30,7 +30,7 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   // Fill water
   tiles.fill(TILE.WATER)
 
-  // --- Left island: shop + disposal on a sand base ---
+  // --- Left island: shop + disposal on a dirt base ---
   const shopCx = 7
   const shopCy = 18
   for (let y = 11; y <= 25; y++) {
@@ -38,12 +38,12 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
       const dx = (x - shopCx) / 5.8
       const dy = (y - shopCy) / 6.5
       if (dx * dx + dy * dy < 1) {
-        tiles[y * WORLD_COLS + x] = TILE.SAND
+        tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
       }
     }
   }
 
-  // Shop + disposal markers on the left sand island
+  // Shop + disposal markers on the left dirt island
   for (let x = 4; x <= 8; x++) {
     for (let y = 13; y <= 16; y++) {
       tiles[y * WORLD_COLS + x] = TILE.SHOP_BUILDING
@@ -86,12 +86,12 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   }
 
   // --- Right-side hall island for pedestals and seen collectibles ---
-  const hallCx = 50
+  const hallCx = 54
   const hallCy = 18
   for (let y = 11; y <= 25; y++) {
-    for (let x = 43; x <= 57; x++) {
-      const dx = (x - hallCx) / 7.1
-      const dy = (y - hallCy) / 6.5
+    for (let x = 47; x <= 61; x++) {
+      const dx = (x - hallCx) / 9.2
+      const dy = (y - hallCy) / 8.4
       if (dx * dx + dy * dy < 1) {
         tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
       }
@@ -105,7 +105,7 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
     }
   }
 
-  for (let x = 39; x <= 42; x++) {
+  for (let x = 43; x <= 46; x++) {
     for (let y = 16; y <= 19; y++) {
       tiles[y * WORLD_COLS + x] = TILE.BRIDGE
     }

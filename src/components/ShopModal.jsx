@@ -94,9 +94,9 @@ export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyH
                 {hintLevel >= hintCosts.length ? 'All hints unlocked' : `Hint ${hintLevel + 1}`}
               </strong>
               <div className="muted">
-                {hintLevel === 0 && 'Reveal a 70×70 search area around the treasure.'}
-                {hintLevel === 1 && 'Reveal a 50×50 search area around the treasure.'}
-                {hintLevel === 2 && 'Reveal a 25×25 search area around the treasure.'}
+                {hintLevel === 0 && 'Reveal 75% of the sand island around the treasure.'}
+                {hintLevel === 1 && 'Reveal 50% of the sand island around the treasure.'}
+                {hintLevel === 2 && 'Reveal 25% of the sand island around the treasure.'}
                 {hintLevel >= 3 && 'You have unlocked every hinted search area.'}
               </div>
             </div>

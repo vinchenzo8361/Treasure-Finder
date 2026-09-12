@@ -19,7 +19,20 @@ import TrophyRoom, { TrophyDetail } from './components/TrophyRoom.jsx'
 import MapResults from './components/MapResults.jsx'
 import DiscoveryOverlay from './components/DiscoveryOverlay.jsx'
 import SettingsScreen from './components/SettingsScreen.jsx'
+import { TILE, WORLD_COLS } from './game/constants.js'
 import './App.css'
+
+const ADMIN_BLOCK = { x: 2, y: 18 }
+
+function syncAdminBlockTile(map, active) {
+  if (!map) return map
+
+  const tiles = Uint8Array.from(map.tiles)
+  const idx = ADMIN_BLOCK.y * WORLD_COLS + ADMIN_BLOCK.x
+  tiles[idx] = active ? TILE.SAND : TILE.SHOP_GROUND
+
+  return { ...map, tiles }
+}
 
 export default function App() {
   const [state, setState] = useState(() => createInitialState())
@@ -33,6 +46,7 @@ export default function App() {
       if (s.adminMode) {
         return {
           ...s,
+          map: syncAdminBlockTile(s.map, false),
           adminMode: false,
           adminBlock: null,
           debugStatsOpen: false,
@@ -53,7 +67,9 @@ export default function App() {
 
       return {
         ...s,
+        map: syncAdminBlockTile(s.map, true),
         adminMode: true,
+        adminBlock: { ...ADMIN_BLOCK, active: true, respawnAt: 0 },
       }
     })
   }, [])
@@ -68,6 +84,7 @@ export default function App() {
       treasureFound: false,
       debugStatsOpen: false,
       digging: null,
+      map: syncAdminBlockTile(s.map, false),
     }))
   }, [])
 

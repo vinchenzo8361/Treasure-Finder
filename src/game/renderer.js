@@ -411,19 +411,81 @@ function drawHallSlots(ctx, hallSlots) {
 
 function drawHintArea(ctx, state) {
   const map = state.map
-  const hintSizes = { 1: 70, 2: 50, 3: 25 }
-  const size = hintSizes[state.hintLevel] || 25
-  const seedShiftX = ((map.seed * 17) % 7) - 3
-  const seedShiftY = ((map.seed * 29) % 7) - 3
-  const boxLeft = clamp(map.treasure.x - Math.floor(size / 2) + seedShiftX * 2, 0, WORLD_COLS - size)
-  const boxTop = clamp(map.treasure.y - Math.floor(size / 2) + seedShiftY * 2, 0, WORLD_ROWS - size)
+  const hintSizes = { 1: 0.75, 2: 0.5, 3: 0.25 }
+  const ratio = hintSizes[state.hintLevel] || 0.25
+  const bounds = getTreasureIslandBounds(map)
+  if (!bounds) return
+
+  const islandWidth = bounds.maxX - bounds.minX + 1
+  const islandHeight = bounds.maxY - bounds.minY + 1
+  const boxWidth = Math.max(3, Math.round(islandWidth * ratio))
+  const boxHeight = Math.max(3, Math.round(islandHeight * ratio))
+
+  const maxOffsetX = Math.max(0, islandWidth - boxWidth)
+  const maxOffsetY = Math.max(0, islandHeight - boxHeight)
+
+  const seedShiftX = ((map.seed * 17) % 100) / 100
+  const seedShiftY = ((map.seed * 29) % 100) / 100
+
+  const boxLeft = clamp(
+    Math.round(bounds.minX + seedShiftX * maxOffsetX),
+    bounds.minX,
+    bounds.maxX - boxWidth + 1,
+  )
+  const boxTop = clamp(
+    Math.round(bounds.minY + seedShiftY * maxOffsetY),
+    bounds.minY,
+    bounds.maxY - boxHeight + 1,
+  )
 
   ctx.fillStyle = 'rgba(255, 92, 92, 0.18)'
-  ctx.fillRect(boxLeft * CELL, boxTop * CELL, size * CELL, size * CELL)
+  ctx.fillRect(boxLeft * CELL, boxTop * CELL, boxWidth * CELL, boxHeight * CELL)
 
   ctx.strokeStyle = 'rgba(255, 92, 92, 0.9)'
   ctx.lineWidth = 2
-  ctx.strokeRect(boxLeft * CELL + 1, boxTop * CELL + 1, size * CELL - 2, size * CELL - 2)
+  ctx.strokeRect(boxLeft * CELL + 1, boxTop * CELL + 1, boxWidth * CELL - 2, boxHeight * CELL - 2)
+}
+
+function getTreasureIslandBounds(map) {
+  if (!map || !map.treasure) return null
+
+  const startX = map.treasure.x
+  const startY = map.treasure.y
+  const queue = [{ x: startX, y: startY }]
+  const seen = new Set([`${startX},${startY}`])
+  let minX = startX
+  let maxX = startX
+  let minY = startY
+  let maxY = startY
+
+  while (queue.length > 0) {
+    const current = queue.shift()
+    const tile = getTile(map, current.x, current.y)
+    if (tile !== TILE.SAND) continue
+
+    minX = Math.min(minX, current.x)
+    maxX = Math.max(maxX, current.x)
+    minY = Math.min(minY, current.y)
+    maxY = Math.max(maxY, current.y)
+
+    const neighbors = [
+      { x: current.x + 1, y: current.y },
+      { x: current.x - 1, y: current.y },
+      { x: current.x, y: current.y + 1 },
+      { x: current.x, y: current.y - 1 },
+    ]
+
+    for (const next of neighbors) {
+      const key = `${next.x},${next.y}`
+      if (seen.has(key)) continue
+      if (!inBounds(next.x, next.y)) continue
+      if (getTile(map, next.x, next.y) !== TILE.SAND) continue
+      seen.add(key)
+      queue.push(next)
+    }
+  }
+
+  return { minX, maxX, minY, maxY }
 }
 
 function clamp(value, min, max) {
