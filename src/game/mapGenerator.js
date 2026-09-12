@@ -111,6 +111,16 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
     }
   }
 
+  // Ensure the east bridge has a solid sand landing area on the main sand island.
+  for (let x = 37; x <= 42; x++) {
+    for (let y = 15; y <= 20; y++) {
+      if (tiles[y * WORLD_COLS + x] === TILE.WATER) {
+        tiles[y * WORLD_COLS + x] = TILE.SAND
+        diggable.push({ x, y })
+      }
+    }
+  }
+
   // Deduplicate diggable
   const digSet = new Set()
   const diggableUnique = []

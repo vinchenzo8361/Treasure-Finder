@@ -3,7 +3,7 @@ import { CELL, WORLD_COLS, WORLD_ROWS } from '../game/constants.js'
 import { drawWorld } from '../game/renderer.js'
 import { tick, tryInteract } from '../game/engine.js'
 
-const VIEWPORT_ZOOM = 0.88
+const VIEWPORT_ZOOM = 0.70
 
 export default function GameCanvas({ state, setState }) {
   const canvasRef = useRef(null)

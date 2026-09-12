@@ -1,5 +1,5 @@
 import { CELL, WORLD_COLS, WORLD_ROWS, TILE, PLAYER_RADIUS } from './constants.js'
-import { getTile } from './mapGenerator.js'
+import { getTile, inBounds } from './mapGenerator.js'
 
 const SAND_A = '#e6c98a'
 const SAND_B = '#d9b86c'
@@ -421,19 +421,23 @@ function drawHintArea(ctx, state) {
   const boxWidth = Math.max(3, Math.round(islandWidth * ratio))
   const boxHeight = Math.max(3, Math.round(islandHeight * ratio))
 
-  const maxOffsetX = Math.max(0, islandWidth - boxWidth)
-  const maxOffsetY = Math.max(0, islandHeight - boxHeight)
+  const treasureX = map.treasure.x
+  const treasureY = map.treasure.y
+  const distanceToLeft = treasureX - bounds.minX
+  const distanceToRight = bounds.maxX - treasureX
+  const distanceToTop = treasureY - bounds.minY
+  const distanceToBottom = bounds.maxY - treasureY
 
-  const seedShiftX = ((map.seed * 17) % 100) / 100
-  const seedShiftY = ((map.seed * 29) % 100) / 100
+  const anchorX = distanceToLeft <= distanceToRight ? 'left' : 'right'
+  const anchorY = distanceToTop <= distanceToBottom ? 'top' : 'bottom'
 
   const boxLeft = clamp(
-    Math.round(bounds.minX + seedShiftX * maxOffsetX),
+    anchorX === 'left' ? treasureX : treasureX - boxWidth + 1,
     bounds.minX,
     bounds.maxX - boxWidth + 1,
   )
   const boxTop = clamp(
-    Math.round(bounds.minY + seedShiftY * maxOffsetY),
+    anchorY === 'top' ? treasureY : treasureY - boxHeight + 1,
     bounds.minY,
     bounds.maxY - boxHeight + 1,
   )

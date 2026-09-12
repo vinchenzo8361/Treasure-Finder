@@ -690,6 +690,7 @@ export function buyHint(state) {
     progress,
     runStats,
     hintLevel: nextHintLevel + 1,
+    shopOpen: false,
     toast: { text: `Hint ${nextHintLevel + 1} unlocked!`, life: 2 },
   }
 }
