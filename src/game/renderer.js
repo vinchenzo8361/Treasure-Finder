@@ -621,14 +621,17 @@ export function drawRunMap(ctx, run, w, h, options = {}) {
 
   // Player marker for live minimap
   if (player) {
+    const markerRadius = 4
+    const haloRadius = 6.4
+
     ctx.fillStyle = '#f87171'
     ctx.beginPath()
-    ctx.arc(ox + player.x * scale, oy + player.y * scale, 5, 0, Math.PI * 2)
+    ctx.arc(ox + player.x * scale, oy + player.y * scale, markerRadius, 0, Math.PI * 2)
     ctx.fill()
     ctx.beginPath()
-    ctx.arc(ox + player.x * scale, oy + player.y * scale, 8, 0, Math.PI * 2)
+    ctx.arc(ox + player.x * scale, oy + player.y * scale, haloRadius, 0, Math.PI * 2)
     ctx.strokeStyle = 'rgba(248, 113, 113, 0.75)'
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = 1.2
     ctx.stroke()
   }
 

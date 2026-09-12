@@ -100,9 +100,9 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1, options = {}
   }
 
   // Bridges: left -> sand and sand -> hall
-  // Keep the bridge endpoints long enough on Big Map so they land cleanly on the island edges.
+  // Shift the right bridge farther right on Big Map so it sits at the island edge instead of being buried inland.
   const leftBridgeEnd = 18
-  const rightBridgeEnd = 46
+  const rightBridgeEnd = bigMap ? 47 : 46
 
   for (let x = 13; x <= leftBridgeEnd; x++) {
     for (let y = 16; y <= 19; y++) {

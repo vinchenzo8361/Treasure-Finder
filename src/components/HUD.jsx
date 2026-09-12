@@ -133,7 +133,7 @@ function BigMapMinimap({ state }) {
   return (
     <div className="big-map-minimap">
       <div className="big-map-minimap-label">Big Map</div>
-      <canvas ref={canvasRef} width={144} height={144} />
+      <canvas ref={canvasRef} width={160} height={160} />
     </div>
   )
 }
