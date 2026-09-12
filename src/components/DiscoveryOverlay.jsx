@@ -23,6 +23,7 @@ export default function DiscoveryOverlay({ discovery, onContinue }) {
       </div>
     )
   }
+  
 
   if (discovery.type === 'treasure') {
     return (

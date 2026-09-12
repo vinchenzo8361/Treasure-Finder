@@ -157,8 +157,9 @@ button {
 }
 
 .admin-btn-on {
-  background: linear-gradient(180deg, #d9761a, #a14d16);
-  border-color: rgba(110, 53, 16, 0.5);
+  background: linear-gradient(180deg, #f0a04a, #d9772e);
+  border-color: rgba(110, 53, 16, 0.6);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 214, 128, 0.24);
 }
 
 .end-run-btn {
