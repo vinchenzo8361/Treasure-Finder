@@ -1,4 +1,4 @@
-export const CELL = 28
+export const CELL = 33.6
 export const WORLD_COLS = 58
 export const WORLD_ROWS = 38
 

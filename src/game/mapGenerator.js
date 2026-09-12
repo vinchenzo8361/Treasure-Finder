@@ -30,7 +30,7 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
   // Fill water
   tiles.fill(TILE.WATER)
 
-  // --- Shop island (left) — solid blob that always reaches the bridge ---
+  // --- Left island: shop + disposal on a sand base ---
   const shopCx = 7
   const shopCy = 18
   for (let y = 11; y <= 25; y++) {
@@ -38,31 +38,36 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
       const dx = (x - shopCx) / 5.8
       const dy = (y - shopCy) / 6.5
       if (dx * dx + dy * dy < 1) {
-        tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
+        tiles[y * WORLD_COLS + x] = TILE.SAND
       }
     }
   }
 
-  // Force a walkable pier toward the bridge so islands never leave a water gap
-  for (let x = 10; x <= 13; x++) {
-    for (let y = 16; y <= 19; y++) {
-      tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
+  // Shop + disposal markers on the left sand island
+  for (let x = 4; x <= 8; x++) {
+    for (let y = 13; y <= 16; y++) {
+      tiles[y * WORLD_COLS + x] = TILE.SHOP_BUILDING
+    }
+  }
+  for (let x = 5; x <= 7; x++) {
+    for (let y = 20; y <= 22; y++) {
+      tiles[y * WORLD_COLS + x] = TILE.DISPOSAL
     }
   }
 
-  // --- Sand island (right) — irregular blob, always includes bridge landing ---
-  const sandCx = 36
+  // --- Middle sand island — irregular diggable island ---
+  const sandCx = 30
   const sandCy = 18
-  const rx = 16 + rng() * 2
-  const ry = 12 + rng() * 2
+  const rx = 11 + rng() * 1.5
+  const ry = 9 + rng() * 1.5
 
   for (let y = 2; y < WORLD_ROWS - 2; y++) {
-    for (let x = 14; x < WORLD_COLS - 2; x++) {
+    for (let x = 18; x < WORLD_COLS - 2; x++) {
       const dx = (x - sandCx) / rx
       const dy = (y - sandCy) / ry
-      const noise = (rng() - 0.5) * 0.18 + Math.sin(x * 0.4 + seed) * 0.05 + Math.cos(y * 0.35) * 0.05
+      const noise = (rng() - 0.5) * 0.18 + Math.sin(x * 0.45 + seed) * 0.04 + Math.cos(y * 0.38) * 0.04
       if (dx * dx + dy * dy < 1 + noise) {
-        if (tiles[y * WORLD_COLS + x] === TILE.WATER) {
+        if (tiles[y * WORLD_COLS + x] === TILE.WATER || tiles[y * WORLD_COLS + x] === TILE.SHOP_GROUND) {
           tiles[y * WORLD_COLS + x] = TILE.SAND
           diggable.push({ x, y })
         }
@@ -70,41 +75,37 @@ export function generateMap(seed, collectedIds = [], mapNumber = 1) {
     }
   }
 
-  // Guaranteed sand landing where the bridge meets the dig island
-  for (let x = 16; x <= 20; x++) {
+  // Guaranteed bridge landing area so the sand island always reaches the connection point.
+  for (let x = 19; x <= 24; x++) {
     for (let y = 15; y <= 20; y++) {
-      if (
-        tiles[y * WORLD_COLS + x] === TILE.WATER ||
-        tiles[y * WORLD_COLS + x] === TILE.SAND
-      ) {
+      if (tiles[y * WORLD_COLS + x] === TILE.WATER) {
         tiles[y * WORLD_COLS + x] = TILE.SAND
         diggable.push({ x, y })
       }
     }
   }
 
-  // --- Right-side hall island for seen collectibles / treasure ---
-  const hallCx = 51
+  // --- Right-side hall island for pedestals and seen collectibles ---
+  const hallCx = 50
   const hallCy = 18
-  for (let y = 12; y <= 24; y++) {
-    for (let x = 44; x <= 56; x++) {
-      const dx = (x - hallCx) / 4.2
-      const dy = (y - hallCy) / 5.2
+  for (let y = 11; y <= 25; y++) {
+    for (let x = 43; x <= 57; x++) {
+      const dx = (x - hallCx) / 7.1
+      const dy = (y - hallCy) / 6.5
       if (dx * dx + dy * dy < 1) {
         tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
       }
     }
   }
 
-  // Small walkway from the sand island to the hall island
-  for (let x = 40; x <= 43; x++) {
+  // Bridges: left -> sand and sand -> hall
+  for (let x = 13; x <= 18; x++) {
     for (let y = 16; y <= 19; y++) {
-      tiles[y * WORLD_COLS + x] = TILE.SHOP_GROUND
+      tiles[y * WORLD_COLS + x] = TILE.BRIDGE
     }
   }
 
-  // --- Bridge: continuous walkable path Shop Island ↔ Sand Island ---
-  for (let x = 12; x <= 17; x++) {
+  for (let x = 39; x <= 42; x++) {
     for (let y = 16; y <= 19; y++) {
       tiles[y * WORLD_COLS + x] = TILE.BRIDGE
     }

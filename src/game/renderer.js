@@ -69,7 +69,9 @@ export function drawWorld(ctx, state, camera, w, h) {
 
   // Right-side collection hall and walkable bridge
   drawHallSlots(ctx, map.hallSlots)
-  drawBridgeRails(ctx)
+  drawBridgeRails(ctx, map)
+  if (map.tiles.some((tile) => tile === TILE.SHOP_BUILDING)) drawShopBuilding(ctx)
+  if (map.tiles.some((tile) => tile === TILE.DISPOSAL)) drawDisposal(ctx)
 
   if (state.adminMode && state.adminBlock?.active) {
     drawAdminBlock(ctx, state.adminBlock)
@@ -428,23 +430,28 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
-function drawBridgeRails(ctx) {
-  ctx.strokeStyle = '#6b4a2a'
-  ctx.lineWidth = 3
-  ctx.beginPath()
-  ctx.moveTo(12 * CELL, 16 * CELL)
-  ctx.lineTo(18 * CELL, 16 * CELL)
-  ctx.moveTo(12 * CELL, 20 * CELL)
-  ctx.lineTo(18 * CELL, 20 * CELL)
-  ctx.stroke()
-  // Plank lines across the wider bridge
-  ctx.strokeStyle = 'rgba(60,40,20,0.35)'
-  ctx.lineWidth = 1
-  for (let x = 12; x <= 17; x++) {
-    ctx.beginPath()
-    ctx.moveTo(x * CELL, 16 * CELL)
-    ctx.lineTo(x * CELL, 20 * CELL)
-    ctx.stroke()
+function drawBridgeRails(ctx, map) {
+  if (!map || !map.tiles) return
+
+  for (let y = 0; y < WORLD_ROWS; y++) {
+    for (let x = 0; x < WORLD_COLS; x++) {
+      if (map.tiles[y * WORLD_COLS + x] !== TILE.BRIDGE) continue
+
+      const px = x * CELL
+      const py = y * CELL
+      ctx.strokeStyle = '#6b4a2a'
+      ctx.lineWidth = 3
+      ctx.strokeRect(px + 2, py + 2, CELL - 4, CELL - 4)
+
+      ctx.strokeStyle = 'rgba(60,40,20,0.35)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(px + 3, py + 3)
+      ctx.lineTo(px + CELL - 3, py + CELL - 3)
+      ctx.moveTo(px + CELL - 3, py + 3)
+      ctx.lineTo(px + 3, py + CELL - 3)
+      ctx.stroke()
+    }
   }
 }
 
