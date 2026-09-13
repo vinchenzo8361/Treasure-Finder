@@ -8,6 +8,7 @@ import {
   SAND_PILE_SPAWN_CHANCE,
   SAND_DISPOSAL_RATE,
   TILE,
+  STARTING_SAND_CAPACITY,
 } from './constants.js'
 import { generateMap, getTile, isWalkable, isDiggable, key, inBounds } from './mapGenerator.js'
 import { randomSeed } from './rng.js'
@@ -89,6 +90,7 @@ export function startNewMap(state, mode = 'normal') {
   progress.money = 0
   progress.equipmentLevel = 1
   progress.selectedEquipmentLevel = 1
+  progress.sandCapacity = STARTING_SAND_CAPACITY
   progress.bigMapDiggerOwned = false
   saveProgress(progress)
 
@@ -474,10 +476,13 @@ function finishDig(state) {
     const cy = (target.y + 0.5) * CELL
 
     if (contents.type === 'coins') {
-      progress.money += contents.amount
-      progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + contents.amount
-      runStats.coinsFromHoles += contents.amount
-      floating.push(floatText(cx, cy, `+${contents.amount}`, '#f5c842'))
+      const selectedTool = getEquipment(state.progress.selectedEquipmentLevel ?? state.progress.equipmentLevel ?? 1)
+      const coinMultiplier = 1 + (selectedTool.coinBonus || 0)
+      const bonusAmount = Math.round(contents.amount * coinMultiplier)
+      progress.money += bonusAmount
+      progress.totalCoinsEarned = (progress.totalCoinsEarned || 0) + bonusAmount
+      runStats.coinsFromHoles += bonusAmount
+      floating.push(floatText(cx, cy, `+${bonusAmount}`, '#f5c842'))
     } else if (contents.type === 'collectible') {
       const id = contents.id
       if (!progress.collectedIds.includes(id)) {

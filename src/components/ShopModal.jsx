@@ -1,6 +1,6 @@
 import { EQUIPMENT, getEquipment, sandCapacityCost } from '../game/engine.js'
 
-export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyHint, onBuyBigMapDigger, onClose }) {
+export default function ShopModal({ state, onBuyEquipment, onEquipEquipment, onBuyCapacity, onBuyHint, onBuyBigMapDigger, onClose }) {
   const { progress } = state
   const current = getEquipment(progress.selectedEquipmentLevel ?? progress.equipmentLevel)
   const nextEq = progress.equipmentLevel < EQUIPMENT.length ? EQUIPMENT[progress.equipmentLevel] : null
@@ -38,11 +38,25 @@ export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyH
                 <div key={eq.id} className={`shop-item ${owned ? 'owned' : ''} ${isNext ? 'next' : ''}`}>
                   <div>
                     <strong>{eq.name}</strong>
-                    <div className="muted">Dig Time: {eq.digTime.toFixed(1)}s</div>
+                    <div className="muted">
+                      Dig Time: {eq.digTime.toFixed(1)}s · Coin bonus: +{Math.round(eq.coinBonus * 100)}%
+                    </div>
                   </div>
                   <div className="shop-item-action">
                     {owned ? (
-                      <span className="badge">OWNED</span>
+                      <>
+                        {progress.selectedEquipmentLevel === eq.id ? (
+                          <span className="badge">EQUIPPED</span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => onEquipEquipment(eq.id)}
+                          >
+                            Equip
+                          </button>
+                        )}
+                      </>
                     ) : locked ? (
                       <span className="badge muted-badge">LOCKED</span>
                     ) : (

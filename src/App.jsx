@@ -126,7 +126,9 @@ export default function App() {
 
   const setSelectedEquipment = useCallback((selectedEquipmentLevel) => {
     setState((s) => {
-      const progress = { ...s.progress, selectedEquipmentLevel }
+      const maxUnlocked = Math.max(1, s.progress.equipmentLevel || 1)
+      const nextLevel = Math.max(1, Math.min(selectedEquipmentLevel, maxUnlocked))
+      const progress = { ...s.progress, selectedEquipmentLevel: nextLevel }
       saveProgress(progress)
       return { ...s, progress }
     })
@@ -222,6 +224,7 @@ export default function App() {
         <ShopModal
           state={state}
           onBuyEquipment={() => setState((s) => buyEquipment(s))}
+          onEquipEquipment={setSelectedEquipment}
           onBuyCapacity={() => setState((s) => buySandCapacity(s))}
           onBuyHint={() => setState((s) => buyHint(s))}
           onBuyBigMapDigger={() => setState((s) => buyBigMapDigger(s))}
