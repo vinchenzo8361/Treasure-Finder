@@ -124,6 +124,14 @@ export default function App() {
     }))
   }, [])
 
+  const setSelectedEquipment = useCallback((selectedEquipmentLevel) => {
+    setState((s) => {
+      const progress = { ...s.progress, selectedEquipmentLevel }
+      saveProgress(progress)
+      return { ...s, progress }
+    })
+  }, [])
+
   if (state.screen === 'menu') {
     return (
       <MainMenu
@@ -192,6 +200,7 @@ export default function App() {
       <GameCanvas state={state} setState={setState} />
       <HUD
         state={state}
+        onEquipmentChange={setSelectedEquipment}
         onMenu={() =>
           setState((s) => ({
             ...s,

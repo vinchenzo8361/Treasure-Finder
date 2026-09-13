@@ -88,6 +88,7 @@ export function startNewMap(state, mode = 'normal') {
   const progress = cloneProgress(state.progress)
   progress.money = 0
   progress.equipmentLevel = 1
+  progress.selectedEquipmentLevel = 1
   progress.bigMapDiggerOwned = false
   saveProgress(progress)
 
@@ -368,7 +369,8 @@ function nearestDiggable(map, player, state) {
 }
 
 function startDig(state, gx, gy) {
-  const eq = getEquipment(state.progress.equipmentLevel)
+  const selectedLevel = state.progress.selectedEquipmentLevel ?? state.progress.equipmentLevel ?? 1
+  const eq = getEquipment(selectedLevel)
   const adminBlock = state.adminMode && state.adminBlock?.active && state.adminBlock.x === gx && state.adminBlock.y === gy
   const useBigMapDigger = state.map?.bigMap && state.progress.bigMapDiggerOwned
 
@@ -766,6 +768,7 @@ export function buyEquipment(state) {
   }
   progress.money -= next.cost
   progress.equipmentLevel = next.id
+  progress.selectedEquipmentLevel = next.id
   progress.totalMoneySpent = (progress.totalMoneySpent || 0) + next.cost
   const runStats = {
     ...state.runStats,

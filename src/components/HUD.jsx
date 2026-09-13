@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
-import { getEquipment, formatTime } from '../game/engine.js'
+import { EQUIPMENT, getEquipment, formatTime } from '../game/engine.js'
 import { COLLECTIBLE_COUNT } from '../data/collectibles.js'
 import { drawRunMap } from '../game/renderer.js'
 
-export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, onEndRun, onAddMoney }) {
+export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, onEndRun, onAddMoney, onEquipmentChange }) {
   const { progress, map, player, timerMs, digging } = state
-  const eq = getEquipment(progress.equipmentLevel)
+  const selectedLevel = progress.selectedEquipmentLevel ?? progress.equipmentLevel ?? 1
+  const eq = getEquipment(selectedLevel)
+  const purchasedLevels = EQUIPMENT.slice(0, Math.max(1, progress.equipmentLevel || 1))
 
   return (
     <div className="hud">
@@ -39,9 +41,20 @@ export default function HUD({ state, onMenu, onAdminToggle, onDebugStatsToggle, 
       </div>
 
       <div className="hud-right">
-        <div className="hud-chip">
+        <div className="hud-chip tool-selector-chip">
           <span className="hud-ico">🛠️</span>
-          <strong>{eq.name}</strong>
+          <select
+            className="tool-selector"
+            value={selectedLevel}
+            onChange={(event) => onEquipmentChange(Number(event.target.value))}
+            aria-label="Choose dig tool"
+          >
+            {purchasedLevels.map((tool) => (
+              <option key={tool.id} value={tool.id}>
+                {tool.name}
+              </option>
+            ))}
+          </select>
           <span className="hud-sub">{eq.digTime.toFixed(1)}s</span>
         </div>
         <div className="hud-chip" title="Digs this map">

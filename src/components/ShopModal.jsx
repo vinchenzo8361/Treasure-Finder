@@ -2,7 +2,7 @@ import { EQUIPMENT, getEquipment, sandCapacityCost } from '../game/engine.js'
 
 export default function ShopModal({ state, onBuyEquipment, onBuyCapacity, onBuyHint, onBuyBigMapDigger, onClose }) {
   const { progress } = state
-  const current = getEquipment(progress.equipmentLevel)
+  const current = getEquipment(progress.selectedEquipmentLevel ?? progress.equipmentLevel)
   const nextEq = progress.equipmentLevel < EQUIPMENT.length ? EQUIPMENT[progress.equipmentLevel] : null
   const capCost = sandCapacityCost(progress.sandCapacity)
   const hintCosts = [25, 30, 50]
